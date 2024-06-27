@@ -1,6 +1,7 @@
 import sys
 import random
 import pygame
+from menu import create_menu
 
 pygame.init()
 
@@ -77,60 +78,65 @@ def handle_input(paddle_left, paddle_right):
         paddle_right.speed_y = 0
 
 def main():
+    pygame.display.set_caption("Pong")
     clock = pygame.time.Clock()
-    all_sprites = pygame.sprite.Group()
-    paddle_left = Paddle("left")
-    paddle_right = Paddle("right")
-    all_sprites.add(paddle_left, paddle_right)
+    game_mode = create_menu(screen)
+    if game_mode == "vs_computer":
+        pass
+    if game_mode == "vs_player":
+        all_sprites = pygame.sprite.Group()
+        paddle_left = Paddle("left")
+        paddle_right = Paddle("right")
+        all_sprites.add(paddle_left, paddle_right)
 
-    ball = Ball()
-    all_sprites.add(ball)
+        ball = Ball()
+        all_sprites.add(ball)
 
-    score_left = 0
-    score_right = 0
+        score_left = 0
+        score_right = 0
 
-    font = pygame.font.Font(None, 72)
+        font = pygame.font.Font(None, 72)
 
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
 
-        handle_input(paddle_left, paddle_right)
-        all_sprites.update()
+            handle_input(paddle_left, paddle_right)
+            all_sprites.update()
 
-        screen.fill(BLACK)
+            screen.fill(BLACK)
 
-        text_left = font.render(str(score_left), True, WHITE)
-        screen.blit(text_left, (SCREEN_WIDTH // 4, 10))
+            text_left = font.render(str(score_left), True, WHITE)
+            screen.blit(text_left, (SCREEN_WIDTH // 4, 10))
 
-        text_right = font.render(str(score_right), True, WHITE)
-        screen.blit(text_right, (SCREEN_WIDTH * 3 // 4, 10))
+            text_right = font.render(str(score_right), True, WHITE)
+            screen.blit(text_right, (SCREEN_WIDTH * 3 // 4, 10))
 
-        all_sprites.draw(screen)
-        pygame.display.flip()
+            all_sprites.draw(screen)
+            pygame.display.flip()
 
-        if ball.rect.x < -BALL_RADIUS:
-            score_right += 1
-            ball.reset()
-        elif ball.rect.x > SCREEN_WIDTH + BALL_RADIUS:
-            score_left += 1
-            ball.reset()
+            if ball.rect.x < -BALL_RADIUS:
+                score_right += 1
+                ball.reset()
+            elif ball.rect.x > SCREEN_WIDTH + BALL_RADIUS:
+                score_left += 1
+                ball.reset()
 
-        # Collision with paddles
-        if ball.rect.colliderect(paddle_left.rect):
-            if ball.rect.centery > paddle_left.rect.top and ball.rect.centery < paddle_left.rect.bottom:
-                ball.speed_x *= -1.1
-                ball.speed_y = (ball.rect.centery - paddle_left.rect.centery) / HALF_PADDLE_HEIGHT * 5
-                ball.rect.x += ball.speed_x
-        elif ball.rect.colliderect(paddle_right.rect):
-            if ball.rect.centery > paddle_right.rect.top and ball.rect.centery < paddle_right.rect.bottom:
-                ball.speed_x *= -1.1
-                ball.speed_y = (ball.rect.centery - paddle_right.rect.centery) / HALF_PADDLE_HEIGHT * 5
-                ball.rect.x += ball.speed_x
+            # Collision with paddles
+            if ball.rect.colliderect(paddle_left.rect):
+                if ball.rect.centery > paddle_left.rect.top and ball.rect.centery < paddle_left.rect.bottom:
+                    ball.speed_x *= -1.1
+                    ball.speed_y = (ball.rect.centery - paddle_left.rect.centery) / HALF_PADDLE_HEIGHT * 5
+                    ball.rect.x += ball.speed_x
+            elif ball.rect.colliderect(paddle_right.rect):
+                if ball.rect.centery > paddle_right.rect.top and ball.rect.centery < paddle_right.rect.bottom:
+                    ball.speed_x *= -1.1
+                    ball.speed_y = (ball.rect.centery - paddle_right.rect.centery) / HALF_PADDLE_HEIGHT * 5
+                    ball.rect.x += ball.speed_x
 
-        clock.tick(60)
+            clock.tick(60)
 
     pygame.quit()
     sys.exit()
