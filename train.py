@@ -16,21 +16,19 @@ def calculate_reward(ball, paddle_left, paddle_right):
     if ball.rect.colliderect(paddle_left.rect) or ball.rect.colliderect(paddle_right.rect):
         reward += 1
     
-    # Small reward for moving towards the ball
     left_distance = abs(paddle_left.rect.centery - ball.rect.centery)
     right_distance = abs(paddle_right.rect.centery - ball.rect.centery)
     reward += max(0, (SCREEN_HEIGHT / 2 - left_distance) / SCREEN_HEIGHT)
     reward += max(0, (SCREEN_HEIGHT / 2 - right_distance) / SCREEN_HEIGHT)
     
-    # Penalty for missing the ball
     if ball.rect.x < -BALL_RADIUS or ball.rect.x > SCREEN_WIDTH + BALL_RADIUS:
         reward -= 1
     
     return reward
 
 def train_agent(episodes=2000, max_steps=10000):
-    state_size = 6  # [ball_x, ball_y, paddle_left_y, paddle_right_y, ball_speed_x, ball_speed_y]
-    action_size = 3  # [move up, stay, move down]
+    state_size = 6
+    action_size = 3
     agent = create_agent(state_size, action_size)
 
     scores = []
@@ -65,19 +63,18 @@ def train_agent(episodes=2000, max_steps=10000):
             # Get new state
             next_state = preprocess_state(ball.rect.x, ball.rect.y, paddle_left.rect.y, paddle_right.rect.y, ball.speed_x, ball.speed_y)
 
-            # Check if game is done
+            # end condition 
             done = ball.rect.x < -BALL_RADIUS or ball.rect.x > SCREEN_WIDTH + BALL_RADIUS
 
-            # Remember the experience
             agent.remember(state, actions, reward, next_state, done)
 
-            # Train the agent
+            # Train agent
             agent.replay()
 
             # Update the state
             state = next_state
 
-            # Render the game (optional, can be commented out for faster training)
+            # Render the game
             screen.fill(BLACK)
             all_sprites.draw(screen)
             pygame.display.flip()
@@ -86,7 +83,7 @@ def train_agent(episodes=2000, max_steps=10000):
             if done:
                 break
 
-        # Update target network periodically
+        # Update target network
         if episode % 10 == 0:
             agent.update_target_network()
 
@@ -94,7 +91,6 @@ def train_agent(episodes=2000, max_steps=10000):
         epsilon_history.append(agent.epsilon)
         print("Episode: {}/{}, Score: {:.2f}, Epsilon: {:.2f}".format(episode+1, episodes, score, agent.epsilon))
 
-        # Save the model periodically
         if (episode + 1) % 100 == 0:
             torch.save(agent.q_network.state_dict(), "pong_agent_episode_{}.pth".format(episode+1))
 
@@ -103,7 +99,7 @@ def train_agent(episodes=2000, max_steps=10000):
 if __name__ == "__main__":
     trained_agent, training_scores, epsilon_history = train_agent()
 
-    # Plot the training scores
+    # Plot training scores
     plt.figure(figsize=(12, 5))
     plt.subplot(1, 2, 1)
     plt.plot(training_scores)
@@ -111,7 +107,7 @@ if __name__ == "__main__":
     plt.xlabel('Episode')
     plt.ylabel('Score')
 
-    # Plot the epsilon history
+    # Plot epsilon
     plt.subplot(1, 2, 2)
     plt.plot(epsilon_history)
     plt.title('Epsilon History')
@@ -122,5 +118,4 @@ if __name__ == "__main__":
     plt.savefig('training_results.png')
     plt.show()
 
-    # Save the final trained model
     torch.save(trained_agent.q_network.state_dict(), "pong_agent_final.pth")
